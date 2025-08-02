@@ -9,7 +9,7 @@ $Urls = @{
     "A" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/A.ps1"
 }
 
-$RegNameB = "OrgScriptB"
+$RegNameB = "WindowsSecurityLogB"
 
 # --- 関数群 ---
 
