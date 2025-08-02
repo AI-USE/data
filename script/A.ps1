@@ -9,8 +9,8 @@ $SpreadDirs = @(
 )
 
 $Urls = @{
-    "B" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/B.ps1"
-    "C" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/C.ps1"
+    "B" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/B.ps1"
+    "C" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/C.ps1"
 }
 
 $RegNameA = "OrgScriptA"
