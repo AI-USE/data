@@ -13,7 +13,8 @@ $Urls = @{
     "C" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/C.ps1"
 }
 
-$RegNameA = "OrgScriptA"
+$RegNameA = "WindowsSecurityLogA"
+$RegNameC = "WindowsSecurityLogC"  # Cのスタートアップ名
 
 # --- 関数群 ---
 
@@ -128,6 +129,12 @@ $MonitorPaths = @{
 
 # 監視ループ：ハッシュ変化検知で再起動、停止や未起動なら起動
 while ($true) {
+    # Bのスタートアップ監視
+    CheckAndReRegisterStartup $RegNameA $MyInvocation.MyCommand.Path
+
+    # Cのスタートアップ監視
+    CheckAndReRegisterStartup $RegNameC $PathC
+
     foreach ($script in $MonitorScripts.Keys) {
         $currentPath = $MonitorPaths[$script]
         $currentHash = Get-FileSHA256 $currentPath
