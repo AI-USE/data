@@ -9,13 +9,13 @@ $SpreadDirs = @(
 )
 
 $Urls = @{
-    "A" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/A.ps1"
-    "C" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/C.ps1"
+    "A" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/A.ps1"
+    "C" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/C.ps1"
 }
 
 $RegNameB = "OrgScriptB"
 
-# --- 関数群（A.ps1と同じものを入れてください） ---
+
 
 function SetHiddenAttribute($path) {
     if (Test-Path $path) {
