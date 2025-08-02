@@ -6,7 +6,7 @@ $SpreadDirs = @(
 )
 
 $Urls = @{
-    "A" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/A.ps1"
+    "A" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/A.ps1"
 }
 
 $RegNameB = "OrgScriptB"
